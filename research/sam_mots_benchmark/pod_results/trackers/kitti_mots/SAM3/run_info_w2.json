@@ -1,0 +1,78 @@
+{
+ "model": "sam3",
+ "tracker_name": "SAM3",
+ "worker": "w2",
+ "build": {
+  "builder": "build_sam3_video_predictor",
+  "kwargs": {}
+ },
+ "session_options": {
+  "offload_video_to_cpu": true,
+  "offload_state_to_cpu": true
+ },
+ "frame_cache_offload": true,
+ "load_seconds": 23.786385774612427,
+ "host": "4475f3127141",
+ "gpu": "NVIDIA A100 80GB PCIe",
+ "torch": "2.14.0+cu130",
+ "cuda": "13.0",
+ "python": "3.12.3",
+ "torch_cpu_threads": 8,
+ "OMP_NUM_THREADS": "8",
+ "sam3_package": "/workspace/ComputerVision_Research/sam3/sam3",
+ "hf_home": "/workspace/.cache/huggingface",
+ "started": "2026-09-30 13:35:20",
+ "benchmark": "kitti_mots",
+ "prompts": {
+  "car": 1,
+  "pedestrian": 2
+ },
+ "sequences": {
+  "0016": {
+   "objects": 28,
+   "overlap_pixels_resolved": 6677,
+   "dropped_after_overlap": 0,
+   "lines": 3230,
+   "frames": 209,
+   "seconds": 246.4,
+   "ms_per_frame": 1178.8,
+   "size": [
+    1224,
+    370
+   ],
+   "peak_gpu_gb": 10.9,
+   "booked_gpu_gb": 4.2
+  },
+  "0018": {
+   "objects": 21,
+   "overlap_pixels_resolved": 0,
+   "dropped_after_overlap": 0,
+   "lines": 2146,
+   "frames": 339,
+   "seconds": 418.7,
+   "ms_per_frame": 1235.1,
+   "size": [
+    1238,
+    374
+   ],
+   "peak_gpu_gb": 10.7,
+   "booked_gpu_gb": 6.8
+  },
+  "0006": {
+   "objects": 13,
+   "overlap_pixels_resolved": 0,
+   "dropped_after_overlap": 0,
+   "lines": 1277,
+   "frames": 270,
+   "seconds": 294.4,
+   "ms_per_frame": 1090.2,
+   "size": [
+    1242,
+    375
+   ],
+   "peak_gpu_gb": 8.3,
+   "booked_gpu_gb": 5.4
+  }
+ },
+ "finished": "2026-09-30 15:07:54"
+}

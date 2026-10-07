@@ -1,0 +1,22 @@
+[project]
+name = "avstack"
+version = "0.1.0"
+description = "A full autonomous-driving stack: sensing, localization, open-vocabulary perception, tracking, prediction, planning, control and safety, with a closed-loop simulator and 3D replay viewer."
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "scipy>=1.11", "matplotlib>=3.8"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "playwright>=1.40"]
+sam3 = ["torch>=2.3", "transformers>=4.57", "pillow>=10"]
+clip = ["torch>=2.3", "transformers>=4.40"]
+
+[tool.setuptools.packages.find]
+include = ["avstack*"]
+
+[tool.setuptools.package-data]
+"avstack.viz" = ["viewer_template.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not slow'"
+markers = ["slow: full closed-loop scenario matrix (minutes)"]

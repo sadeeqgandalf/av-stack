@@ -1,0 +1,21 @@
+{
+ "frames": 480,
+ "tracks": {
+  "1001": "vehicle.tesla.model3",
+  "1002": "vehicle.mercedes.sprinter",
+  "1003": "vehicle.nissan.patrol",
+  "2001": "walker.pedestrian.0002"
+ },
+ "mask_agreement_unoccluded_iou": 0.924,
+ "occlusion_events_seen_before_and_after": [
+  {
+   "track": 2001,
+   "start_frame": 168,
+   "end_frame": 276,
+   "seconds": 3.63,
+   "min_visibility": 0.0
+  }
+ ],
+ "collisions": 0,
+ "gt_lines": 939
+}

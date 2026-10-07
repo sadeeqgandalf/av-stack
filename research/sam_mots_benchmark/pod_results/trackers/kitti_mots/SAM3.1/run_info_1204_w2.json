@@ -1,0 +1,53 @@
+{
+ "model": "sam3.1",
+ "tracker_name": "SAM3.1",
+ "worker": "w2",
+ "build": {
+  "builder": "build_sam3_multiplex_video_predictor",
+  "kwargs": {
+   "max_num_objects": 128,
+   "use_fa3": false
+  },
+  "post_build": {
+   "tracker.offload_output_to_cpu_for_eval": true
+  }
+ },
+ "session_options": {
+  "offload_video_to_cpu": true,
+  "offload_state_to_cpu": true
+ },
+ "load_seconds": 29.54856824874878,
+ "host": "4475f3127141",
+ "gpu": "NVIDIA A100 80GB PCIe",
+ "torch": "2.14.0+cu130",
+ "cuda": "13.0",
+ "python": "3.12.3",
+ "torch_cpu_threads": 8,
+ "OMP_NUM_THREADS": "8",
+ "sam3_package": "/workspace/ComputerVision_Research/sam3/sam3",
+ "hf_home": "/workspace/.cache/huggingface",
+ "started": "2026-09-30 12:04:56",
+ "benchmark": "kitti_mots",
+ "prompts": {
+  "car": 1,
+  "pedestrian": 2
+ },
+ "sequences": {
+  "0014": {
+   "objects": 18,
+   "overlap_pixels_resolved": 1,
+   "dropped_after_overlap": 0,
+   "lines": 615,
+   "frames": 106,
+   "seconds": 45.9,
+   "ms_per_frame": 432.9,
+   "size": [
+    1224,
+    370
+   ],
+   "peak_gpu_gb": 22.2,
+   "booked_gpu_gb": 6.1
+  }
+ },
+ "finished": "2026-09-30 12:05:43"
+}

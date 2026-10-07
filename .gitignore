@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+results/
+viewer/
+*.egg-info/
+logs/
+videos/
+
+# not published: large videos and raw per-frame tracker outputs (regenerate with the scripts)
+*.mp4
+*.mov
+research/sam_mots_benchmark/pod_results/trackers/*/*/data/
+.DS_Store
+.cursor/
+.claude/

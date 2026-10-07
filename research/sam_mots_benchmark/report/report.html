@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset='utf-8'><title>SAM 3 vs SAM 3.1 MOTS benchmark</title><style>
+@page { size: A4; margin: 16mm 15mm; }
+body { font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: #0b0b0b; font-size: 10.2pt; line-height: 1.45; }
+h1 { font-size: 19pt; margin: 0 0 2mm; } h2 { font-size: 13pt; margin: 7mm 0 2mm; border-bottom: 1px solid #e1e0d9; padding-bottom: 1mm; }
+h3 { font-size: 11pt; margin: 4mm 0 1mm; } .sub { color: #52514e; margin-bottom: 5mm; }
+table { border-collapse: collapse; width: 100%; font-size: 8.8pt; margin: 2mm 0 4mm; font-variant-numeric: tabular-nums; }
+th, td { padding: 1.4mm 1.6mm; text-align: right; border-bottom: 1px solid #e1e0d9; } thead th { color: #52514e; font-weight: 600; border-bottom: 1.5px solid #c3c2b7; }
+tbody th { text-align: left; font-weight: 600; white-space: nowrap; } td.best { font-weight: 700; }
+tr.ref th, tr.ref td { color: #52514e; } .dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; }
+img { width: 100%; margin: 1mm 0 3mm; } .note { color: #52514e; font-size: 8.8pt; } code { font-size: 8.8pt; background: #f0efec; padding: 0 2px; border-radius: 2px; }
+.pb { page-break-before: always; } .keep { page-break-inside: avoid; }
+</style></head><body>
+<h1>SAM 3 vs SAM 3.1 · zero-shot multi-object tracking &amp; segmentation</h1>
+<div class="sub">KITTI-MOTS (val) and MOTSChallenge MOTS20 (train) · official TrackEval HOTA · focus: association · 30 Sep 2026</div>
+<h2>Key findings</h2>
+<ul>
+<li><b>SAM 3 associates better than SAM 3.1 on both benchmarks.</b> AssA: KITTI-MOTS car 86.0 vs 77.3, pedestrian 74.4 vs 66.7; MOTS20 pedestrian 75.9 vs 61.2. IDF1 and identity switches follow (MOTS20: IDF1 84.8 vs 68.3, IDSW 66 vs 152).</li>
+<li><b>SAM 3.1 loses identities in different ways on the two benchmarks.</b> On MOTS20 (crowded, occluded pedestrians) the drop is in association *recall* (AssRe 86.6 vs 66.3): one person is split into several tracks. It predicts 300 identities for 228 real pedestrians, and 62 pedestrians are mostly lost (SAM 3: 18). Association *precision* is similar (85.3 vs 82.3). On KITTI-MOTS the loss is mainly extra tracks and false positives (cars: 1,233 FP vs 511).</li>
+<li><b>The gap is not uniform.</b> Over the 19 sequence/class pairs, SAM 3 has an AssA more than 3 points higher on 10 and SAM 3.1 on 3 (KITTI 0007 and 0014 pedestrian, MOTS20-09). The other 6 are within 3 points. The largest SAM 3.1 losses are KITTI 0002 pedestrians (23 vs 59), MOTS20-11 (57 vs 84) and MOTS20-05 (52 vs 70).</li>
+<li><b>Both zero-shot models beat the trained TrackR-CNN reference on association</b>, most of all for pedestrians (MOTS20 AssA 75.9 / 61.2 vs 37.4).</li>
+<li><b>SAM 3.1 failure case:</b> on MOTS20-11 (frames 468-485) one SAM 3.1 track&#x27;s mask breaks into up to ~3,000 fragments covering 20-45% of the frame. It is scored as-is.</li>
+</ul>
+<p><b>Implication for occlusion:</b> SAM 3.1&#x27;s MOTS20 loss is objects being split into new tracks, which is what happens when identity is not recovered after an occlusion. The next step measures that directly, using MOT17&#x27;s per-frame visibility labels.</p>
+<h2>Association</h2>
+<p class="note">AssA (association accuracy) measures how consistently each ground-truth object is followed by one predicted
+identity across its lifetime, over all correctly detected frames. It is the part of HOTA that occlusion stresses.
+AssRe penalises one object being split into several tracks; AssPr penalises one track covering several objects.</p>
+<img src="figures/1_association.png">
+<div class="pb"></div>
+<h2>Overall accuracy and its two halves</h2>
+<p class="note">HOTA is the geometric mean of detection (DetA) and association (AssA) accuracy, averaged over localisation
+thresholds α = 0.05 … 0.95. A tracker can lose HOTA by finding fewer objects (DetA) or by breaking their identities (AssA).</p>
+<img src="figures/2_overall.png">
+<h2>Association in detail</h2>
+<img src="figures/5_assa_alpha.png"><img src="figures/6_assa_per_sequence.png">
+<div class="pb"></div>
+<h2>Full results (TrackEval, combined over sequences)</h2>
+<p class="note">Bold = better of SAM 3 / SAM 3.1. IDSW = identity switches, Frag = track fragmentations, IDs / GT_IDs =
+number of predicted / ground-truth identities. sMOTA is TrackEval's name for sMOTSA. ms / frame = end-to-end inference time
+on one A100 80GB including all prompts (several workers shared the GPU, so absolute times are indicative only).</p>
+<div class='keep'><h3>KITTI-MOTS val · car</h3><table><thead><tr><th></th><th>HOTA</th><th>DetA</th><th>AssA</th><th>AssRe</th><th>AssPr</th><th>LocA</th><th>IDF1</th><th>IDSW</th><th>Frag</th><th>sMOTA</th><th>MOTA</th><th>IDs</th><th>GT_IDs</th><th>ms / frame</th></tr></thead><tbody><tr class=''><th><span class="dot" style="background:#2a78d6"></span>SAM 3</th><td class="best">82.6</td><td class="best">79.7</td><td class="best">86.0</td><td class="best">92.0</td><td class="best">89.6</td><td class="best">89.8</td><td class="best">93.0</td><td class="best">4</td><td class="best">55</td><td class="best">78.8</td><td class="best">89.7</td><td>156</td><td class="best">151</td><td>1232</td></tr><tr class=''><th><span class="dot" style="background:#eb6834"></span>SAM 3.1</th><td>74.6</td><td>72.4</td><td>77.3</td><td>86.8</td><td>83.9</td><td>89.6</td><td>84.4</td><td>22</td><td>68</td><td>67.9</td><td>78.7</td><td class="best">168</td><td class="best">151</td><td>715</td></tr><tr class='ref'><th><span class="dot" style="background:#898781"></span>TrackR-CNN (reference)</th><td>72.3</td><td>77.4</td><td>67.8</td><td>78.4</td><td>77.8</td><td>88.3</td><td>78.8</td><td>94</td><td>145</td><td>76.2</td><td>87.8</td><td>173</td><td>151</td><td>–</td></tr></tbody></table></div><div class='keep'><h3>KITTI-MOTS val · pedestrian</h3><table><thead><tr><th></th><th>HOTA</th><th>DetA</th><th>AssA</th><th>AssRe</th><th>AssPr</th><th>LocA</th><th>IDF1</th><th>IDSW</th><th>Frag</th><th>sMOTA</th><th>MOTA</th><th>IDs</th><th>GT_IDs</th><th>ms / frame</th></tr></thead><tbody><tr class=''><th><span class="dot" style="background:#2a78d6"></span>SAM 3</th><td class="best">69.8</td><td class="best">66.0</td><td class="best">74.4</td><td class="best">79.2</td><td class="best">82.2</td><td class="best">82.1</td><td class="best">89.7</td><td class="best">5</td><td class="best">49</td><td class="best">62.0</td><td class="best">79.9</td><td class="best">75</td><td class="best">68</td><td>1232</td></tr><tr class=''><th><span class="dot" style="background:#eb6834"></span>SAM 3.1</th><td>63.3</td><td>60.5</td><td>66.7</td><td>73.1</td><td>78.5</td><td>81.4</td><td>81.5</td><td>6</td><td>51</td><td>53.4</td><td>71.0</td><td>74</td><td class="best">68</td><td>715</td></tr><tr class='ref'><th><span class="dot" style="background:#898781"></span>TrackR-CNN (reference)</th><td>42.1</td><td>54.9</td><td>32.7</td><td>48.4</td><td>45.2</td><td>78.6</td><td>53.9</td><td>78</td><td>113</td><td>46.8</td><td>65.1</td><td>72</td><td>68</td><td>–</td></tr></tbody></table></div><div class='keep'><h3>MOTS20 train · pedestrian</h3><table><thead><tr><th></th><th>HOTA</th><th>DetA</th><th>AssA</th><th>AssRe</th><th>AssPr</th><th>LocA</th><th>IDF1</th><th>IDSW</th><th>Frag</th><th>sMOTA</th><th>MOTA</th><th>IDs</th><th>GT_IDs</th><th>ms / frame</th></tr></thead><tbody><tr class=''><th><span class="dot" style="background:#2a78d6"></span>SAM 3</th><td class="best">72.6</td><td class="best">70.2</td><td class="best">75.9</td><td class="best">86.6</td><td>82.3</td><td>86.8</td><td class="best">84.8</td><td class="best">66</td><td>450</td><td class="best">67.1</td><td class="best">81.0</td><td>230</td><td class="best">228</td><td>1237</td></tr><tr class=''><th><span class="dot" style="background:#eb6834"></span>SAM 3.1</th><td>61.5</td><td>62.6</td><td>61.2</td><td>66.3</td><td class="best">85.3</td><td class="best">86.9</td><td>68.3</td><td>152</td><td class="best">377</td><td>56.9</td><td>68.9</td><td class="best">300</td><td class="best">228</td><td>1025</td></tr><tr class='ref'><th><span class="dot" style="background:#898781"></span>TrackR-CNN (reference)</th><td>45.1</td><td>56.3</td><td>37.4</td><td>51.3</td><td>53.8</td><td>82.4</td><td>51.2</td><td>315</td><td>712</td><td>52.7</td><td>66.9</td><td>180</td><td>228</td><td>–</td></tr></tbody></table></div>
+<p class="note">Per-sequence values for every metric: <code>results_per_sequence.csv</code>. Raw TrackEval outputs are kept on the pod.</p>
+<div class="pb"></div>
+<h2>Protocol and reproducibility</h2>
+<p>Fixed before any result was produced (30 Sep 2026). Primary question: <b>association</b>:</p>
+<p>how well does each model keep an object&#x27;s identity over time (the property that matters</p>
+<p>under occlusion)? HOTA decomposes into detection (DetA) and association (AssA); we report</p>
+<p>both, with AssA / AssRe / AssPr, IDF1 and ID switches as the primary association measures.</p>
+<h2>Benchmarks (official splits, official ground truth)</h2>
+<pre class='note'>| benchmark | split | sequences | frames | classes |
+</pre><p><pre class='note'>|---|---|---|---|---|</p>
+| KITTI-MOTS | val (official MOTS val split) | 0002 0006 0007 0008 0010 0013 0014 0016 0018 | 2,981 | car, pedestrian |
+| MOTSChallenge (MOTS20) | train | MOTS20-02 05 09 11 | 2,862 | pedestrian |
+</pre><p>Ground truth and seqmaps: TrackEval&#x27;s official <code>data.zip</code></p>
+<p>(sha256 <code>148a4bdf56f8cb32f9bde4b3d70717242cbb2e61900ef0101abc4652e268f2a5</code>).</p>
+<p>Images: official KITTI tracking <code>image_02</code> PNGs and MOTS20 JPEGs, unmodified.</p>
+<h2>Evaluation</h2>
+<p>TrackEval, upstream <code>JonathonLuiten/TrackEval</code> @ <code>12c8791b303e0a0b50f753af204249e622d0281a</code>,</p>
+<p>official scripts <code>run_kitti_mots.py</code> / <code>run_mots_challenge.py</code>, default settings</p>
+<p>(metrics HOTA, CLEAR, Identity), in an isolated environment with the repository&#x27;s pinned</p>
+<p>requirements: Python 3.8.20, numpy 1.18.1, scipy 1.4.1, pycocotools 2.0.2, matplotlib 3.2.1.</p>
+<p>All four evaluations run the official scripts through <code>trackeval_run.py</code>, which only raises</p>
+<p>Python&#x27;s csv field-size limit (default 131,072 characters) before executing the script unchanged:</p>
+<p>four valid lines of SAM 3.1&#x27;s MOTS20-11 output (one track, frames 468-485, a mask broken into up</p>
+<p>to ~3,000 fragments) exceed it.</p>
+<p><b>Validation of the evaluation setup</b>: the official TrackR-CNN outputs shipped in</p>
+<p><code>data.zip</code> reproduce the published values (Voigtlaender et al., CVPR 2019): KITTI-MOTS</p>
+<p>val sMOTSA 76.2 / 46.8 and MOTSA 87.8 / 65.1 (car / pedestrian); MOTS20 train sMOTSA 52.7.</p>
+<p>TrackR-CNN is reported as a reference row.</p>
+<h2>Models (exactly as in Meta&#x27;s official notebooks)</h2>
+<pre class='note'>| | SAM 3 | SAM 3.1 |
+</pre><p><pre class='note'>|---|---|---|</p>
+| builder | <code>build_sam3_video_predictor()</code> | <code>build_sam3_multiplex_video_predictor(max_num_objects=128, use_fa3=False)</code> |
+| checkpoint | <code>facebook/sam3</code> <code>sam3.pt</code>, sha256 <code>9999e2341ceef5e136daa386eecb55cb414446a00ac2b55eb2dfd2f7c3cf8c9e</code> | <code>facebook/sam3.1</code> <code>sam3.1_multiplex.pt</code>, sha256 <code>0567debeec80ba4ac6369540c6c248025283cb3ff2b92827509e57e2b3541cb6</code> |
+| output threshold | 0.5 (default) | 0.5 (default) |
+| deviations from defaults | none (SAM 3&#x27;s own tracking capacity is <code>max_num_objects=10000</code>, i.e. unlimited) | <code>max_num_objects=128</code>: the model class&#x27;s own default (&quot;should be able to cover nearly all cases&quot;); the builder&#x27;s 16 equals the densest ground-truth frame (MOTS20: 16 pedestrians) and would cap SAM 3.1 exactly where association is hardest. <code>use_fa3=False</code>: FlashAttention 3 requires an H100 (hardware, not method). |
+</pre><p>Inference flow per sequence and prompt (official): <code>start_session</code> on the frame folder →</p>
+<p><code>reset_session</code> → <code>add_prompt(text, frame 0)</code> → <code>propagate_in_video</code> → <code>close_session</code>.</p>
+<p>Prompts are the benchmark class names: <code>car</code>, <code>pedestrian</code> (KITTI-MOTS); <code>pedestrian</code></p>
+<p>(MOTS20). No tuning on these benchmarks; every parameter above was fixed in advance.</p>
+<h2>Conversion to the MOTS format</h2>
+<p>One line per object and frame: <code>frame id class_id img_h img_w rle</code> (COCO compressed RLE),</p>
+<p><code>class_id</code> 1 = car, 2 = pedestrian, <code>id = class_id * 1000 + SAM object id</code>. KITTI frames</p>
+<p>0-based, MOTS20 1-based (each benchmark&#x27;s convention). The format requires</p>
+<p>non-overlapping masks: overlapping pixels are assigned to the higher-confidence object;</p>
+<p>objects left with no pixels are dropped (counts recorded per sequence in <code>run_info.json</code>).</p>
+<h2>Environment</h2>
+<p>NVIDIA A100 80GB PCIe (driver 595.91.07); SAM environment Python 3.12.3, torch</p>
+<p>2.14.0+cu130, numpy 1.26.4; Meta <code>sam3</code> code from the research repository at commit</p>
+<p><code>e61d7a5</code>.</p>
+<p>Execution (throughput only; no effect on model inputs, parameters or outputs): several</p>
+<p>worker processes per model share the GPU and take sequences from a common queue,</p>
+<p>longest first; each process is limited to 8 CPU threads (<code>OMP_NUM_THREADS=8</code>; the</p>
+<p>default of one thread per core on the 252-core host made SAM 3 CPU-bound at 5.2 s/frame</p>
+<p>with the GPU idle); sessions use the official <code>offload_video_to_cpu=True</code> request option</p>
+<p>(decoded frames held in host memory), SAM 3.1 additionally the tracker&#x27;s official</p>
+<p><code>offload_output_to_cpu_for_eval</code>; and after each frame is returned, the model&#x27;s cache of that</p>
+<p>frame&#x27;s full-resolution masks (<code>cached_frame_outputs</code>, otherwise kept on the GPU for the whole</p>
+<p>video; &gt;80 GB on 1080p MOTS20) is moved to host memory. Verified output-neutral: KITTI-MOTS</p>
+<p>0014 re-run with the offloads is byte-identical to the run without, for both models</p>
+<p>(<code>verify_cache_offload.py</code>). SAM 3.1 KITTI-MOTS 0002 and 0006 were produced</p>
+<p>before this change with a single process (<code>run_info_initial.json</code>). Loading reports 64 &quot;missing keys&quot; named <code>*.attn.freqs_cis_{real,imag}</code>: these</p>
+<p>are rotary-position tables computed at initialisation, not learned weights (benign).</p>
+</body></html>

@@ -1,0 +1,12 @@
+{
+ "objects": 5,
+ "overlap_pixels_resolved": 36193,
+ "dropped_after_overlap": 0,
+ "lines": 781,
+ "frames": 480,
+ "seconds": 320.7,
+ "build": {
+  "builder": "build_sam3_video_predictor",
+  "kwargs": {}
+ }
+}

@@ -1,0 +1,10 @@
+benchmark,split,class,tracker,HOTA,DetA,AssA,AssRe,AssPr,LocA,IDF1,IDSW,Frag,sMOTA,MOTA,IDs,GT_IDs,ms_per_frame
+kitti_mots,val,car,SAM 3,82.6,79.7,86.0,92.0,89.6,89.8,93.0,4,55,78.8,89.7,156,151,1231.895910780669
+kitti_mots,val,car,SAM 3.1,74.6,72.4,77.3,86.8,83.9,89.6,84.4,22,68,67.9,78.7,168,151,715.3639718215364
+kitti_mots,val,car,TrackR-CNN (reference),72.3,77.4,67.8,78.4,77.8,88.3,78.8,94,145,76.2,87.8,173,151,
+kitti_mots,val,pedestrian,SAM 3,69.8,66.0,74.4,79.2,82.2,82.1,89.7,5,49,62.0,79.9,75,68,1231.895910780669
+kitti_mots,val,pedestrian,SAM 3.1,63.3,60.5,66.7,73.1,78.5,81.4,81.5,6,51,53.4,71.0,74,68,715.3639718215364
+kitti_mots,val,pedestrian,TrackR-CNN (reference),42.1,54.9,32.7,48.4,45.2,78.6,53.9,78,113,46.8,65.1,72,68,
+mots_challenge,train,pedestrian,SAM 3,72.6,70.2,75.9,86.6,82.3,86.8,84.8,66,450,67.1,81.0,230,228,1236.8623340321453
+mots_challenge,train,pedestrian,SAM 3.1,61.5,62.6,61.2,66.3,85.3,86.9,68.3,152,377,56.9,68.9,300,228,1024.8427672955975
+mots_challenge,train,pedestrian,TrackR-CNN (reference),45.1,56.3,37.4,51.3,53.8,82.4,51.2,315,712,52.7,66.9,180,228,

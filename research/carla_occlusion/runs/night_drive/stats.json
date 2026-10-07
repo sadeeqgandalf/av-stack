@@ -1,0 +1,17 @@
+{
+ "surface": "wet",
+ "ego_driver": "carla BehaviorAgent(normal)",
+ "vehicles": 40,
+ "walkers": 55,
+ "max_speed_kmh": 27.4,
+ "pct_time_over_limit_5kmh": 0.0,
+ "accel_p1_p99": [
+  -4.1,
+  2.71
+ ],
+ "jerk_p1_p99": [
+  -12.02,
+  13.72
+ ],
+ "collisions": []
+}

@@ -1,0 +1,53 @@
+{
+ "model": "sam3.1",
+ "benchmark": "kitti_mots",
+ "tracker_name": "SAM3.1",
+ "build": {
+  "builder": "build_sam3_multiplex_video_predictor",
+  "kwargs": {
+   "max_num_objects": 128,
+   "use_fa3": false
+  }
+ },
+ "prompts": {
+  "car": 1,
+  "pedestrian": 2
+ },
+ "load_seconds": 434.2531762123108,
+ "host": "4475f3127141",
+ "gpu": "NVIDIA A100 80GB PCIe",
+ "torch": "2.14.0+cu130",
+ "cuda": "13.0",
+ "python": "3.12.3",
+ "sam3_package": "/workspace/ComputerVision_Research/sam3/sam3",
+ "hf_home": "/workspace/.cache/huggingface",
+ "started": "2026-09-30 11:18:03",
+ "sequences": {
+  "0002": {
+   "objects": 31,
+   "overlap_pixels_resolved": 141682,
+   "dropped_after_overlap": 5,
+   "lines": 1832,
+   "frames": 233,
+   "seconds": 314.9,
+   "ms_per_frame": 1351.5,
+   "size": [
+    1242,
+    375
+   ]
+  },
+  "0006": {
+   "objects": 12,
+   "overlap_pixels_resolved": 0,
+   "dropped_after_overlap": 0,
+   "lines": 1587,
+   "frames": 270,
+   "seconds": 289.5,
+   "ms_per_frame": 1072.3,
+   "size": [
+    1242,
+    375
+   ]
+  }
+ }
+}

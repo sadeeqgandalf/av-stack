@@ -1,0 +1,50 @@
+{
+ "tracker": "runs/ped_behind_van/sam/SAM3/data.txt",
+ "occlusion_events": [
+  {
+   "track": 2001,
+   "start_frame": 168,
+   "end_frame": 276,
+   "seconds": 3.63,
+   "min_visibility": 0.0,
+   "sam_id_before": 2000,
+   "sam_id_after": 2001,
+   "outcome": "switched"
+  }
+ ],
+ "per_track": {
+  "1001": {
+   "gt_frames": 138,
+   "matched_frames": 136,
+   "sam_ids_used": [
+    1000
+   ],
+   "id_changes": 0
+  },
+  "1002": {
+   "gt_frames": 284,
+   "matched_frames": 282,
+   "sam_ids_used": [
+    1001
+   ],
+   "id_changes": 0
+  },
+  "1003": {
+   "gt_frames": 324,
+   "matched_frames": 169,
+   "sam_ids_used": [
+    1002
+   ],
+   "id_changes": 0
+  },
+  "2001": {
+   "gt_frames": 193,
+   "matched_frames": 117,
+   "sam_ids_used": [
+    2000,
+    2001
+   ],
+   "id_changes": 1
+  }
+ }
+}
