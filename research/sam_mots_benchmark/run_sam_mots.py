@@ -56,6 +56,21 @@ BENCHMARKS = {
         "frame_offset": 1,
         "classes": {"pedestrian": 2},
     },
+    # Test splits: labels are withheld, outputs are scored only by the benchmark servers.
+    "kitti_mots_test": {
+        "seqs": [f"{i:04d}" for i in range(29)],
+        "frames": lambda s: DATA / "data_tracking_image_2/testing/image_02" / s,
+        "out_name": lambda s: s,
+        "frame_offset": 0,
+        "classes": {"car": 1, "pedestrian": 2},
+    },
+    "mots_challenge_test": {
+        "seqs": ["MOTS20-01", "MOTS20-06", "MOTS20-07", "MOTS20-12"],
+        "frames": lambda s: DATA / "MOTSChallenge/MOTS/test" / s / "img1",
+        "out_name": lambda s: s,
+        "frame_offset": 1,
+        "classes": {"pedestrian": 2},
+    },
 }
 
 
@@ -69,7 +84,29 @@ def log(*a):
     print(time.strftime("%H:%M:%S"), *a, flush=True)
 
 
-def build(model: str):
+# Setting variants for SAM 3.1 (not part of the scored protocol; see ekf/SETTINGS_EXPERIMENT.md). The official build
+# is unchanged; these attributes are set on the built model afterwards. S = the values SAM 3 ships with
+# (sam3/model_builder.py:756-772); M = the tracker's memory selection, which SAM 3 has on and SAM 3.1 off.
+SAM3_TRACKING = {"score_threshold_detection": 0.5, "new_det_thresh": 0.7, "suppress_unmatched_only_within_hotstart": True,
+                 "init_trk_keep_alive": 30, "max_trk_keep_alive": 30, "min_trk_keep_alive": -1,
+                 "suppress_det_close_to_boundary": False, "fill_hole_area": 16, "masklet_confirmation_enable": False}
+VARIANTS = {"S": SAM3_TRACKING, "M": {"use_memory_selection": True}, "SM": {**SAM3_TRACKING, "use_memory_selection": True}}
+
+
+def apply_variant(pred, variant: str) -> dict:
+    """Set each attribute on the top-level model if it has it, otherwise on every sub-module that does."""
+    top = [v for v in vars(pred).values() if isinstance(v, torch.nn.Module)]
+    done = {}
+    for attr, new in VARIANTS[variant].items():
+        holders = [m for m in top if hasattr(m, attr)] or [m for t in top for m in t.modules() if hasattr(m, attr)]
+        assert holders, f"no module has {attr}"
+        done[attr] = {"was": sorted({repr(getattr(m, attr)) for m in holders}), "now": new, "modules": [type(m).__name__ for m in holders]}
+        for m in holders:
+            setattr(m, attr, new)
+    return done
+
+
+def build(model: str, variant: str = ""):
     from sam3.model_builder import build_sam3_multiplex_video_predictor, build_sam3_video_predictor
     if model == "sam3":
         return build_sam3_video_predictor(), {"builder": "build_sam3_video_predictor", "kwargs": {}}
@@ -82,8 +119,12 @@ def build(model: str):
     assert mods and not any(m.use_memory_selection for m in mods.values())
     for m in mods.values():
         m.offload_output_to_cpu_for_eval = True
-    return pred, {"builder": "build_sam3_multiplex_video_predictor", "kwargs": kwargs,
-                  "post_build": {"tracker.offload_output_to_cpu_for_eval": True}}
+    info = {"builder": "build_sam3_multiplex_video_predictor", "kwargs": kwargs,
+            "post_build": {"tracker.offload_output_to_cpu_for_eval": True}}
+    if variant:
+        info["variant"] = {variant: apply_variant(pred, variant)}
+        log(f"variant {variant}: {json.dumps(info['variant'])}")
+    return pred, info
 
 
 def offload_frame_cache(pred, session_id: str, fi: int):
@@ -173,7 +214,7 @@ def sched() -> dict:
 
 def est_growth_gb(model: str, benchmark: str, frames: int) -> float:
     c = sched()
-    g = c["gb_per_frame"][model] * frames * (c["mots_factor"] if benchmark == "mots_challenge" else 1.0)
+    g = c["gb_per_frame"][model] * frames * (c["mots_factor"] if benchmark.startswith("mots_challenge") else 1.0)
     # cap: one sequence must always fit beside one loaded worker of each model
     return min(g, c["budget_gb"] - sum(c["base_gb"].values()))
 
@@ -244,8 +285,10 @@ def main():
     ap.add_argument("--out-root", type=Path, required=True)
     ap.add_argument("--seqs", nargs="*")
     ap.add_argument("--worker", default="w0")
+    ap.add_argument("--variant", choices=list(VARIANTS), default="", help="SAM 3.1 only: changed tracking settings")
     a = ap.parse_args()
-    tracker = "SAM3" if a.model == "sam3" else "SAM3.1"
+    assert not (a.variant and a.model == "sam3"), "variants change SAM 3.1 only"
+    tracker = ("SAM3" if a.model == "sam3" else "SAM3.1") + (f"_{a.variant}" if a.variant else "")
 
     def frame_list(b, seq):
         return sorted(p for p in BENCHMARKS[b]["frames"](seq).iterdir() if p.suffix.lower() in (".png", ".jpg", ".jpeg"))
@@ -261,7 +304,7 @@ def main():
     while not ledger.reserve(base_key, sched()["base_gb"][a.model]):
         time.sleep(30)
     t0 = time.time()
-    pred, build_info = build(a.model)
+    pred, build_info = build(a.model, a.variant)
     load_s = time.time() - t0
     log(f"{a.model} [{a.worker}] loaded in {load_s:.0f}s")
     import sam3

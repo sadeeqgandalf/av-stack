@@ -15,3 +15,6 @@ research/sam_mots_benchmark/pod_results/trackers/*/*/data/
 .DS_Store
 .cursor/
 .claude/
+
+# EKF layer: downloaded ground truth, calibration, SAM outputs and rendered videos (rebuild with the scripts)
+research/sam_mots_benchmark/ekf/_data/
