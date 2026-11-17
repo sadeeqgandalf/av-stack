@@ -1,6 +1,6 @@
 """Run SAM 3 / SAM 3.1 on a CARLA sequence exactly as in the KITTI-MOTS / MOTS20 benchmark.
 
-Reuses the benchmark runner (research/sam_mots_benchmark/run_sam_mots.py): same builders and settings, same official
+Reuses the benchmark runner (ComputerVision_Research repo, sam_mots_benchmark/run_sam_mots.py): same builders and settings, same official
 flow (text prompt on frame 0, propagate), same MOTS conversion. Prompts: "car" (class 1), "pedestrian" (class 2).
 
     python run_sam_carla.py --model sam3 --seq runs/ped_behind_van --out runs/ped_behind_van/sam
